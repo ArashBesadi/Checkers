@@ -93,18 +93,18 @@ public class Board {
                 panel.add(buttonBoard[y][x]);
 
 
-                if ((x % 2 == 1 && y % 2 == 1) || (x % 2 == 0 && y % 2 == 0)) {
+                if ((x % 2 == 1 && y % 2 == 1) ||    (x % 2 == 0 && y % 2 == 0)) {
                     b.setBackground(light_brown);
 
                 } else {
                     b.setBackground(dark_brown);
                     if (y < 3) {
-                        redPieces.put(String.valueOf(x) + ":" + String.valueOf(y), new Piece());
-                        buttonBoard[y][x].setIcon(new ImageIcon(redPiece));
+//                        redPieces.put(String.valueOf(x) + ":" + String.valueOf(y), new Piece());
+//                        buttonBoard[y][x].setIcon(new ImageIcon(redPiece));
                     }
                     if (y > 4) {
-                        blackPieces.put(String.valueOf(x) + ":" + String.valueOf(y), new Piece());
-                        buttonBoard[y][x].setIcon(new ImageIcon(blackPiece));
+//                        blackPieces.put(String.valueOf(x) + ":" + String.valueOf(y), new Piece());
+//                        buttonBoard[y][x].setIcon(new ImageIcon(blackPiece));
                     }
                 }
             }
@@ -112,7 +112,7 @@ public class Board {
 
         Scenario scenario = new Scenario(this);
 //        scenario.multipleJumpsAI();
-//        scenario.multipleJumpsHuman();
+        scenario.multipleJumpsHuman();
 //        scenario.generalCheck();
 
         frame.pack();

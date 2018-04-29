@@ -16,11 +16,11 @@ public class MiniMax {
         this.ai = ai;
     }
 
-    public int miniMax(Map<String, Piece> redPieces, Map<String, Piece> blackPieces, int depth, int alpha, int beta, boolean maximizingPlayer) {
+    public int miniMax(Map<String, Piece> redPieces, Map<String, Piece> blackPieces, int depth, int alpha, int beta, boolean human) {
 
 //        System.out.println(ai.recursionCounter++);
 
-        utility.getPossibleMoves(redPieces, blackPieces);
+        utility.getPossibleMoves(redPieces, blackPieces,human);
 
         List<String[]> possibleAttackMoves = utility.getJumpMoves();
         List<String[]> possibleMoves = utility.getSimpleMoves();
@@ -37,7 +37,7 @@ public class MiniMax {
 
         String[] tempBestMove = null;
 
-        if (maximizingPlayer) {
+        if (!human) {
 
             int score = Integer.MIN_VALUE;
 
@@ -46,8 +46,8 @@ public class MiniMax {
                 Map<String, Piece> copyRedPieces = utility.deepCopyMap(redPieces);
                 Map<String, Piece> copyBlackPieces = utility.deepCopyMap(blackPieces);
 
-                ai.makeMove(move, copyRedPieces, copyBlackPieces, false);
-                score = miniMax(copyRedPieces, copyBlackPieces, depth - 1, alpha, beta, false);
+                ai.makeMove(move, copyRedPieces, copyBlackPieces, false,human);
+                score = miniMax(copyRedPieces, copyBlackPieces, depth - 1, alpha, beta, true);
                 if (alpha < score) {
                     alpha = score;
                     System.out.println(alpha);
@@ -67,8 +67,8 @@ public class MiniMax {
                 Map<String, Piece> copyRedPieces = utility.deepCopyMap(redPieces);
                 Map<String, Piece> copyBlackPieces = utility.deepCopyMap(blackPieces);
 
-                ai.makeMove(move, copyRedPieces, copyBlackPieces, false);
-                score = miniMax(copyRedPieces, copyBlackPieces, depth - 1, alpha, beta, true);
+                ai.makeMove(move, copyRedPieces, copyBlackPieces, false,human);
+                score = miniMax(copyRedPieces, copyBlackPieces, depth - 1, alpha, beta, false);
                 if (score < beta) {
                     beta = score;
                     tempBestMove = move;

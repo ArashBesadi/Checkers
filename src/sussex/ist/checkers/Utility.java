@@ -169,7 +169,7 @@ public class Utility {
                     copyJumpMoves.add(i, key);
                     clearMoves();
                     // maybe remove this
-                    removeKeys = new HashMap<>();
+//                    removeKeys = new HashMap<>();
                     checkMultipleJump(redPieces, blackPieces, human);
                 }
             }
@@ -183,12 +183,18 @@ public class Utility {
 
     }
 
-    public void getPossibleMoves(Map<String, Piece> redPieces, Map<String, Piece> blackPieces) {
+    public void getPossibleMoves(Map<String, Piece> redPieces, Map<String, Piece> blackPieces,boolean human) {
 
         clearMoves();
+        Map<String,Piece> pieces;
+        if(human){
+            pieces = redPieces;
+        }else{
+            pieces = blackPieces;
+        }
 
-        for (String blackKey : blackPieces.keySet()) {
-            successor(blackKey, redPieces, blackPieces, false);
+        for (String key : pieces.keySet()) {
+            successor(key, redPieces, blackPieces, human);
         }
     }
 
@@ -256,5 +262,4 @@ public class Utility {
     public void setCopyJumpMoves(List<String[]> copyJumpMoves) {
         this.copyJumpMoves = copyJumpMoves;
     }
-
 }

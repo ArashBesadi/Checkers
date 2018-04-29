@@ -20,7 +20,14 @@ public class AI {
         miniMax = new MiniMax(utility, this);
     }
 
-    public void makeMove(String[] movements, Map<String, Piece> redPieces, Map<String, Piece> blackPieces, boolean realMove) {
+    public void makeMove(String[] movements, Map<String, Piece> redPieces, Map<String, Piece> blackPieces, boolean realMove,boolean human) {
+
+        if(human){
+            Map<String,Piece> tempBlack = blackPieces;
+            blackPieces = redPieces;
+            redPieces = tempBlack;
+        }
+
 
         String newKey = movements[0];
         String formerKey;
@@ -85,16 +92,16 @@ public class AI {
             Map<String, Piece> redPieces = board.getRedPieces();
             Map<String, Piece> blackPieces = board.getBlackPieces();
 
-            utility.getPossibleMoves(redPieces, blackPieces);
+            utility.getPossibleMoves(redPieces, blackPieces,false);
             List<String[]> simpleMoves = utility.getSimpleMoves();
             List<String[]> jumpMoves = utility.getJumpMoves();
 
             if (simpleMoves.isEmpty() && jumpMoves.isEmpty()) {
-                System.out.println("game over");
+                System.out.println("win");
             } else {
                 int depth = 2;
                 recursionCounter = 1;
-                miniMax.miniMax(utility.deepCopyMap(redPieces), utility.deepCopyMap(blackPieces), depth, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
+                miniMax.miniMax(utility.deepCopyMap(redPieces), utility.deepCopyMap(blackPieces), depth, Integer.MIN_VALUE, Integer.MAX_VALUE, false);
 
 
                 String[] bestMove = miniMax.getBestMove();
@@ -103,14 +110,14 @@ public class AI {
                 if (bestMove.length == 3) {
                     jumpMoves = new ArrayList<>();
                     jumpMoves.add(bestMove);
-                    utility.setCopyJumpMoves(jumpMoves);
+                    utility.setJumpMoves(jumpMoves);
                     List<String[]> copiedAttackMoves = utility.deepCopyList(jumpMoves);
-                    utility.setJumpMoves(copiedAttackMoves);
+                    utility.setCopyJumpMoves(copiedAttackMoves);
                     utility.clearRemoveKeys();
                     utility.checkMultipleJump(utility.deepCopyMap(redPieces), utility.deepCopyMap(blackPieces), false);
                     bestMove = copiedAttackMoves.get(0);
                 }
-                makeMove(bestMove, redPieces, blackPieces, true);
+                makeMove(bestMove, redPieces, blackPieces, true,false);
                 board.setMovablePieces();
 
             }
