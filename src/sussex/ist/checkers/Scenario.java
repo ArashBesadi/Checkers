@@ -29,6 +29,9 @@ public class Scenario {
         redPieces.put(String.valueOf(4) + ":" + String.valueOf(3), new Piece());
         buttonBoard[3][4].setIcon(new ImageIcon(redPiece));
 
+        redPieces.put(String.valueOf(2) + ":" + String.valueOf(6), new Piece());
+        buttonBoard[6][2].setIcon(new ImageIcon(redPiece));
+
         blackPieces.put(String.valueOf(3) + ":" + String.valueOf(6), new Piece());
         buttonBoard[6][3].setIcon(new ImageIcon(blackPiece));
     }

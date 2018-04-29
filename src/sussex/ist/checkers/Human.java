@@ -17,15 +17,16 @@ public class Human implements ActionListener {
     private Board board;
     private JButton tempSelectedButton;
     private boolean wait = true;
+    private boolean invalidSimpleMove;
+    private boolean invalidJump;
 
 
     public Human(Utility utility, AI ai) {
         this.utility = utility;
         this.ai = ai;
 
-        // And From your main() method or any other method
         java.util.Timer timer = new java.util.Timer();
-        timer.schedule(new MoveAI(), 0, 100);
+        timer.schedule(new MoveAI(), 0, 400);
     }
 
     class MoveAI extends TimerTask {
@@ -40,6 +41,8 @@ public class Human implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
 
+        ai.moveAI();
+
         String currentPosition = e.getActionCommand();
         int[] xy = utility.getXY(currentPosition);
 
@@ -50,13 +53,31 @@ public class Human implements ActionListener {
         Map<String, Piece> redPieces = board.getRedPieces();
         JButton[][] buttonBoard = board.getButtonBoard();
 
-        if (checkGreenFieldSelected(greenFields, currentPosition))
+        if (checkGreenFieldSelected(greenFields, currentPosition)) {
             return;
+        }
+        board.setSimpleMoveFields(new JButton[4]);
+
         if (checkRedFieldSelected(redFields, currentPosition, blackPieces, buttonBoard)) {
             return;
         }
 
+        board.setJumpFields(new JButton[4]);
+
+        if(!redPieces.containsKey(currentPosition)) {
+            if (invalidSimpleMove || invalidJump) {
+                board.getTextField().setText("Invalid move! Please choose a field that is highlighted green or red. See the help menu for the rules.");
+                invalidSimpleMove = false;
+                invalidJump = false;
+            }
+        }else {
+            board.getTextField().setText("Feedback: ");
+        }
+
+
+
         if (redPieces.containsKey(currentPosition)) {
+
 
             tempSelectedButton = buttonBoard[xy[1]][xy[0]];
 
@@ -89,6 +110,7 @@ public class Human implements ActionListener {
                     redField.setBackground(Color.RED);
                     redFields[i] = redField;
                 }
+                board.setJumpFields(redFields);
             }
             utility.clearMoves();
             utility.successor(currentPosition, redPieces, blackPieces, true);
@@ -104,8 +126,10 @@ public class Human implements ActionListener {
                         greenField.setBackground(board.getNeon_green());
                         greenFields[i] = greenField;
                     }
+                    board.setSimpleMoveFields(greenFields);
                 }
             }
+
             board.resetGreenFields();
         }
     }
@@ -115,8 +139,11 @@ public class Human implements ActionListener {
             if (redField != null) {
                 boolean fieldMatch = selectField(redField, currentPosition);
                 if (fieldMatch) {
+                    invalidJump = false;
                     board.setJumpFields(new JButton[4]);
                     return true;
+                }else{
+                    invalidJump = true;
                 }
             }
         }
@@ -130,7 +157,10 @@ public class Human implements ActionListener {
                 boolean fieldMatch = selectField(greenField, currentPosition);
                 if (fieldMatch) {
                     board.setSimpleMoveFields(new JButton[4]);
+                    invalidSimpleMove = false;
                     return true;
+                } else {
+                    invalidSimpleMove = true;
                 }
             }
         }

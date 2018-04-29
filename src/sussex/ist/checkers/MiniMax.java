@@ -20,7 +20,7 @@ public class MiniMax {
 
 //        System.out.println(ai.recursionCounter++);
 
-        utility.getPossibleMoves(redPieces, blackPieces,human);
+        utility.getPossibleMoves(redPieces, blackPieces, human);
 
         List<String[]> possibleAttackMoves = utility.getJumpMoves();
         List<String[]> possibleMoves = utility.getSimpleMoves();
@@ -32,13 +32,13 @@ public class MiniMax {
             moves = possibleAttackMoves;
         }
         if (depth == 0 || moves.isEmpty()) {
-            return heuristic(redPieces,blackPieces);
+            return heuristic(redPieces, blackPieces);
         }
 
         String[] tempBestMove = null;
 
         if (!human) {
-
+            
             int score = Integer.MIN_VALUE;
 
             for (String[] move : moves) {
@@ -46,7 +46,7 @@ public class MiniMax {
                 Map<String, Piece> copyRedPieces = utility.deepCopyMap(redPieces);
                 Map<String, Piece> copyBlackPieces = utility.deepCopyMap(blackPieces);
 
-                ai.makeMove(move, copyRedPieces, copyBlackPieces, false,human);
+                ai.makeMove(move, copyRedPieces, copyBlackPieces, false, human);
                 score = miniMax(copyRedPieces, copyBlackPieces, depth - 1, alpha, beta, true);
                 if (alpha < score) {
                     alpha = score;
@@ -61,13 +61,14 @@ public class MiniMax {
             return score;
         } else {
 
+
             int score = Integer.MAX_VALUE;
             for (String[] move : moves) {
 
                 Map<String, Piece> copyRedPieces = utility.deepCopyMap(redPieces);
                 Map<String, Piece> copyBlackPieces = utility.deepCopyMap(blackPieces);
 
-                ai.makeMove(move, copyRedPieces, copyBlackPieces, false,human);
+                ai.makeMove(move, copyRedPieces, copyBlackPieces, false, human);
                 score = miniMax(copyRedPieces, copyBlackPieces, depth - 1, alpha, beta, false);
                 if (score < beta) {
                     beta = score;
@@ -82,11 +83,11 @@ public class MiniMax {
         }
     }
 
-    private int heuristic(Map<String, Piece> redPieces, Map<String, Piece> blackPieces){
+    private int heuristic(Map<String, Piece> redPieces, Map<String, Piece> blackPieces) {
         int diffBlackRed = blackPieces.size() - redPieces.size();
         int numberKings = 0;
-        for(String black: blackPieces.keySet()){
-            if(blackPieces.get(black).isKing()){
+        for (String black : blackPieces.keySet()) {
+            if (blackPieces.get(black).isKing()) {
                 numberKings++;
             }
         }

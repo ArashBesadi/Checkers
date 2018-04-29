@@ -16,6 +16,7 @@ import java.util.Map;
 public class Board {
 
     private Human human;
+    private AI ai;
     private Utility utility;
 
     private Map<String, Piece> redPieces = new HashMap<>();
@@ -37,9 +38,11 @@ public class Board {
     private Color dark_brown = new Color(156, 101, 43);
     private Color light_brown = new Color(211, 168, 107);
     private Color neon_green = new Color(124, 250, 80);
+    private TextField textField;
 
-    public Board(Human human) {
+    public Board(Human human,AI ai) {
         this.human = human;
+        this.ai = ai;
         this.utility = new Utility();
         initGUI();
     }
@@ -49,33 +52,21 @@ public class Board {
         JPanel panel = new JPanel(new GridLayout(0, 8));
         panel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-        JPanel boardConstrain = new JPanel(new GridBagLayout());
-        boardConstrain.add(panel);
-
         JFrame frame = new JFrame("Checkers");
         frame.setResizable(false);
         frame.setAlwaysOnTop(true);
 
-        JMenuBar menuBar = new JMenuBar();
-        JMenu newGame = new JMenu("New Game");
-        JMenu help = new JMenu("Help");
-        JMenuItem newRules = new JMenuItem("Rules");
-        help.add(newRules);
-        newRules.addActionListener(e -> {
-            if (Desktop.isDesktopSupported()) {
-                try {
-                    Desktop.getDesktop().browse(new URI("http://www.indepthinfo.com/checkers/play.shtml"));
-                } catch (IOException | URISyntaxException e1) {
-                    e1.printStackTrace();
-                }
-            }
-        });
+        Container contentPane = frame.getContentPane();
+        contentPane.add(panel,BorderLayout.NORTH);
+        textField = new TextField();
+        textField.setText("Feedback:");
+        textField.setEnabled(false);
+        contentPane.add(textField,BorderLayout.SOUTH);
 
-        menuBar.add(newGame);
-        menuBar.add(help);
+        JMenuBar menuBar = new JMenuBar();
+        setMenus(menuBar);
 
         frame.setJMenuBar(menuBar);
-        frame.add(boardConstrain);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         loadPictures();
@@ -111,8 +102,8 @@ public class Board {
         }
 
         Scenario scenario = new Scenario(this);
-//        scenario.multipleJumpsAI();
-        scenario.multipleJumpsHuman();
+        scenario.multipleJumpsAI();
+//        scenario.multipleJumpsHuman();
 //        scenario.generalCheck();
 
         frame.pack();
@@ -120,6 +111,75 @@ public class Board {
         frame.setVisible(true);
 
         setMovablePieces();
+    }
+
+    private void setMenus(JMenuBar menuBar){
+
+
+        JMenu gameMenu = new JMenu("Game");
+        JMenu difficultyMenu = new JMenu("Difficulty");
+        JMenu helpMenu = new JMenu("Help");
+
+
+        JRadioButtonMenuItem easy = new JRadioButtonMenuItem("Easy: Depth = 1");
+        JRadioButtonMenuItem medium = new JRadioButtonMenuItem("Medium: Depth = 2");
+        JRadioButtonMenuItem hard = new JRadioButtonMenuItem("Hard: Depth = 4");
+        JRadioButtonMenuItem veryHard = new JRadioButtonMenuItem("Very Hard: Depth = 6");
+
+        difficultyMenu.add(easy);
+        difficultyMenu.add(medium);
+        difficultyMenu.add(hard);
+        difficultyMenu.add(veryHard);
+
+        ButtonGroup group = new ButtonGroup();
+        group.add(easy);
+        group.add(medium);
+        group.add(hard);
+        group.add(veryHard);
+
+        JMenuItem newGame = new JMenuItem("New Game");
+        gameMenu.add(newGame);
+        newGame.addActionListener(e -> {
+            redPieces = new HashMap<>();
+            blackPieces = new HashMap<>();
+            buttonBoard = new JButton[8][8];
+            initGUI();
+        });
+
+        medium.setSelected(true);
+
+        easy.addActionListener(e -> {
+        ai.setDepth(AI.EASY);
+        });
+
+        medium.addActionListener(e -> {
+            ai.setDepth(AI.MEDIUM);
+        });
+
+        hard.addActionListener(e -> {
+            ai.setDepth(AI.HARD);
+        });
+
+        veryHard.addActionListener(e -> {
+            ai.setDepth(AI.VERY_HARD);
+        });
+
+        JMenuItem newRules = new JMenuItem("Rules");
+        helpMenu.add(newRules);
+        newRules.addActionListener(e -> {
+            if (Desktop.isDesktopSupported()) {
+                try {
+                    Desktop.getDesktop().browse(new URI("http://www.indepthinfo.com/checkers/play.shtml"));
+                } catch (IOException | URISyntaxException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        });
+
+        menuBar.add(gameMenu);
+        menuBar.add(difficultyMenu);
+        menuBar.add(helpMenu);
+
     }
 
     private void loadPictures() {
@@ -146,12 +206,21 @@ public class Board {
 
             utility.successor(redKey, redPieces, blackPieces, true);
         }
-        if (!utility.getJumpMoves().isEmpty()) {
-            setWhitePieces(utility.getJumpMoves());
-        } else {
-            setWhitePieces(utility.getSimpleMoves());
-        }
 
+        List<String[]> simpleMoves = utility.getSimpleMoves();
+        List<String[]> jumpMoves = utility.getJumpMoves();
+
+        if (!jumpMoves.isEmpty()) {
+            setWhitePieces(jumpMoves);
+        } else {
+            setWhitePieces(simpleMoves);
+        }
+        if(redPieces.size() == 0){
+            textField.setText("Game Over!");
+        }
+        if(simpleMoves.isEmpty() && jumpMoves.isEmpty()){
+            textField.setText("Game Over");
+        }
     }
 
     private void setWhitePieces(List<String[]> moves) {
@@ -267,4 +336,9 @@ public class Board {
     public Color getNeon_green() {
         return neon_green;
     }
+
+    public TextField getTextField() {
+        return textField;
+    }
+
 }
