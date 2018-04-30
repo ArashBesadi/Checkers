@@ -5,6 +5,9 @@ import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.util.Map;
 
+/**
+ * Contains board configurations to test special moves.
+ */
 public class Scenario {
 
     private final Map<String, Piece> redPieces;
@@ -49,20 +52,5 @@ public class Scenario {
 
         redPieces.put(String.valueOf(4) + ":" + String.valueOf(3), new Piece());
         buttonBoard[3][4].setIcon(new ImageIcon(redPiece));
-    }
-
-    public void generalCheck() {
-
-        blackPieces.put(String.valueOf(3) + ":" + String.valueOf(6), new Piece());
-        buttonBoard[6][3].setIcon(new ImageIcon(blackPiece));
-
-        redPieces.put(String.valueOf(5) + ":" + String.valueOf(4), new Piece());
-        buttonBoard[4][5].setIcon(new ImageIcon(redPiece));
-
-        redPieces.put(String.valueOf(4) + ":" + String.valueOf(1), new Piece());
-        buttonBoard[1][4].setIcon(new ImageIcon(redPiece));
-
-        redPieces.put(String.valueOf(1) + ":" + String.valueOf(2), new Piece());
-        buttonBoard[2][1].setIcon(new ImageIcon(redPiece));
     }
 }

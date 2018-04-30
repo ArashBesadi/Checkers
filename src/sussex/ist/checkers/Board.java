@@ -13,6 +13,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
+/**
+ * This class is the GUI of the game. It consists of a 2D board with 64 buttons.
+ * However, the representation of the pieces in handled by a HashMap where the position is used as a key.
+ * Each color (red and black) has its own HashMap.
+ */
 public class Board {
 
     private Human human;
@@ -40,13 +46,16 @@ public class Board {
     private Color neon_green = new Color(124, 250, 80);
     private TextField textField;
 
-    public Board(Human human,AI ai) {
+    public Board(Human human, AI ai) {
         this.human = human;
         this.ai = ai;
         this.utility = new Utility();
         initGUI();
     }
 
+    /**
+     * Initialise the GUI with 64 buttons.
+     */
     public final void initGUI() {
 
         JPanel panel = new JPanel(new GridLayout(0, 8));
@@ -54,14 +63,14 @@ public class Board {
 
         JFrame frame = new JFrame("Checkers");
         frame.setResizable(false);
-        frame.setAlwaysOnTop(true);
+//        frame.setAlwaysOnTop(true);
 
         Container contentPane = frame.getContentPane();
-        contentPane.add(panel,BorderLayout.NORTH);
+        contentPane.add(panel, BorderLayout.NORTH);
         textField = new TextField();
         textField.setText("Feedback:");
         textField.setEnabled(false);
-        contentPane.add(textField,BorderLayout.SOUTH);
+        contentPane.add(textField, BorderLayout.SOUTH);
 
         JMenuBar menuBar = new JMenuBar();
         setMenus(menuBar);
@@ -71,9 +80,9 @@ public class Board {
 
         loadPictures();
 
+        // add 64 button to the board
         for (int y = buttonBoard.length - 1; y >= 0; y--) {
             for (int x = 0; x < buttonBoard[y].length; x++) {
-
 
                 JButton b = new JButton();
                 b.setOpaque(true);
@@ -84,27 +93,26 @@ public class Board {
                 panel.add(buttonBoard[y][x]);
 
 
-                if ((x % 2 == 1 && y % 2 == 1) ||    (x % 2 == 0 && y % 2 == 0)) {
+                if ((x % 2 == 1 && y % 2 == 1) || (x % 2 == 0 && y % 2 == 0)) {
                     b.setBackground(light_brown);
 
                 } else {
                     b.setBackground(dark_brown);
                     if (y < 3) {
-//                        redPieces.put(String.valueOf(x) + ":" + String.valueOf(y), new Piece());
-//                        buttonBoard[y][x].setIcon(new ImageIcon(redPiece));
+                        redPieces.put(String.valueOf(x) + ":" + String.valueOf(y), new Piece());
+                        buttonBoard[y][x].setIcon(new ImageIcon(redPiece));
                     }
                     if (y > 4) {
-//                        blackPieces.put(String.valueOf(x) + ":" + String.valueOf(y), new Piece());
-//                        buttonBoard[y][x].setIcon(new ImageIcon(blackPiece));
+                        blackPieces.put(String.valueOf(x) + ":" + String.valueOf(y), new Piece());
+                        buttonBoard[y][x].setIcon(new ImageIcon(blackPiece));
                     }
                 }
             }
         }
 
-        Scenario scenario = new Scenario(this);
-        scenario.multipleJumpsAI();
+//        Scenario scenario = new Scenario(this);
+//        scenario.multipleJumpsAI();
 //        scenario.multipleJumpsHuman();
-//        scenario.generalCheck();
 
         frame.pack();
         frame.setLocationRelativeTo(null);
@@ -113,13 +121,21 @@ public class Board {
         setMovablePieces();
     }
 
-    private void setMenus(JMenuBar menuBar){
-
+    /**
+     * Adds three menus to the game with sub-menus
+     * <ul>
+     * <li>Game</li>
+     * <li>Difficulty</li>
+     * <li>Help</li>
+     * </ul>
+     *
+     * @param menuBar the menubar used as a container of the  the menus
+     */
+    private void setMenus(JMenuBar menuBar) {
 
         JMenu gameMenu = new JMenu("Game");
         JMenu difficultyMenu = new JMenu("Difficulty");
         JMenu helpMenu = new JMenu("Help");
-
 
         JRadioButtonMenuItem easy = new JRadioButtonMenuItem("Easy: Depth = 1");
         JRadioButtonMenuItem medium = new JRadioButtonMenuItem("Medium: Depth = 2");
@@ -149,7 +165,7 @@ public class Board {
         medium.setSelected(true);
 
         easy.addActionListener(e -> {
-        ai.setDepth(AI.EASY);
+            ai.setDepth(AI.EASY);
         });
 
         medium.addActionListener(e -> {
@@ -166,6 +182,8 @@ public class Board {
 
         JMenuItem newRules = new JMenuItem("Rules");
         helpMenu.add(newRules);
+
+        // opens the default browser to show a page of the rules
         newRules.addActionListener(e -> {
             if (Desktop.isDesktopSupported()) {
                 try {
@@ -182,6 +200,9 @@ public class Board {
 
     }
 
+    /**
+     * Loads the piece pictures
+     */
     private void loadPictures() {
         try {
             whitePiece = ImageIO.read(new File("images/whitePiece.png"));
@@ -198,6 +219,9 @@ public class Board {
         }
     }
 
+    /**
+     * Finds the movable red pieces and gives them a different color.
+     */
     public void setMovablePieces() {
 
         utility.clearMoves();
@@ -215,14 +239,19 @@ public class Board {
         } else {
             setWhitePieces(simpleMoves);
         }
-        if(redPieces.size() == 0){
+        if (redPieces.size() == 0) {
             textField.setText("Game Over!");
         }
-        if(simpleMoves.isEmpty() && jumpMoves.isEmpty()){
+        if (simpleMoves.isEmpty() && jumpMoves.isEmpty()) {
             textField.setText("Game Over");
         }
     }
 
+    /**
+     * Borders the red pieces with a white color.
+     *
+     * @param moves
+     */
     private void setWhitePieces(List<String[]> moves) {
 
         clearBoard();
@@ -241,6 +270,9 @@ public class Board {
 
     }
 
+    /**
+     * Clears the board from the green and red fields as well as white and yellow pieces.
+     */
     private void clearBoard() {
         for (int y = buttonBoard.length - 1; y >= 0; y--) {
             for (int x = 0; x < buttonBoard[y].length; x++) {
@@ -262,6 +294,9 @@ public class Board {
         }
     }
 
+    /**
+     * Cleans the green fields if there a jump move possible by on of the red pieces.
+     */
     public void resetGreenFields() {
 
         utility.clearMoves();

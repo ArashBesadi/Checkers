@@ -6,20 +6,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-
+/**
+ * This class is responsible for the intelligent checkers agent.
+ */
 public class AI {
 
+    // several agent difficulty
     public static final int EASY = 1;
     public static final int MEDIUM = 2;
     public static final int HARD = 4;
     public static final int VERY_HARD = 6;
-    public int depth;
 
     private Utility utility;
-    private String formerKey;
+    private MiniMax miniMax;
     private Board board;
-    private final MiniMax miniMax;
+
+    private String formerPositionKey;
+    private int depth;
     public int recursionCounter;
+    private boolean blackKing;
 
     public AI(Utility utility) {
         this.utility = utility;
@@ -27,94 +32,69 @@ public class AI {
         depth = AI.MEDIUM;
     }
 
+    /**
+     * Moves the red and black pieces to its new position.
+     *
+     * @param movements   the movements which consists of the new, former and removed position keys
+     * @param redPieces   the red pieces
+     * @param blackPieces the black pieces
+     * @param realMove    the realMove indicates whether or not the moves are simulations called while iterating thourgh the search tree
+     * @param human       the human boolean indicates the current player
+     */
     public void makeMove(String[] movements, Map<String, Piece> redPieces, Map<String, Piece> blackPieces, boolean realMove, boolean human) {
 
+        // if human then swap the pieces
         if (human) {
             Map<String, Piece> tempBlack = blackPieces;
             blackPieces = redPieces;
             redPieces = tempBlack;
         }
 
-        String newKey = movements[0];
-        String formerKey;
-
+        // get former position key
+        String formerPositionKey;
         if (realMove) {
-            formerKey = this.formerKey;
+            formerPositionKey = this.formerPositionKey;
         } else {
-            formerKey = movements[1];
+            formerPositionKey = movements[1];
         }
-
-        int[] newXY = utility.getXY(newKey);
-        int newX = newXY[0];
-        int newY = newXY[1];
-
-        int[] formerXY = utility.getXY(formerKey);
+        int[] formerXY = utility.getXY(formerPositionKey);
         int formerX = formerXY[0];
         int formerY = formerXY[1];
 
-        blackPieces.put(newKey, new Piece());
+        // get new position key
+        String newPositionKey = movements[0];
+        int[] newXY = utility.getXY(newPositionKey);
+        int newX = newXY[0];
+        int newY = newXY[1];
 
-        if (newY == Utility.MIN_BOARDER || blackPieces.get(formerKey).isKing()) {
-            blackPieces.get(newKey).setKing(true);
+
+        // put new position to the boarder representation
+        blackPieces.put(newPositionKey, new Piece());
+        // check whether piece can be promotoed to king
+        if (newY == Utility.MIN_BOARDER || blackPieces.get(formerPositionKey).isKing()) {
+            blackPieces.get(newPositionKey).setKing(true);
         }
+        blackPieces.remove(formerPositionKey);
 
-        blackPieces.remove(formerKey);
+        JButton[][] buttonBoard = board.getButtonBoard();
+        blackKing = blackPieces.get(newPositionKey).isKing();
 
-        JButton[][] chessBoardSquares = board.getButtonBoard();
-        chessBoardSquares[formerY][formerX].setIcon(null);
-
-        boolean blackKing = blackPieces.get(newKey).isKing();
-
-
+        // if jump
         if (movements.length == 3) {
             if (realMove) {
-                int delay = 0;
-                Map<String, List<String[]>> removeKeys = utility.getRemoveKeys();
-                for (String removeKey : removeKeys.keySet()) {
-                    List<String[]> redKeys = removeKeys.get(removeKey);
-
-                    for (int i = 0; i < redKeys.size(); i++) {
-
-                        redPieces.remove(redKeys.get(i)[0]);
-
-                        int finalI = i;
-                        Timer timer = new Timer(delay, ae -> {
-
-                            int[] redXY = utility.getXY(redKeys.get(finalI)[0]);
-                            chessBoardSquares[redXY[1]][redXY[0]].setIcon(null);
-
-                            int[] blackKey = utility.getXY(redKeys.get(finalI)[1]);
-                            chessBoardSquares[blackKey[1]][blackKey[0]].setIcon(new ImageIcon(board.getBlackPiece()));
-
-                            if (finalI > 0) {
-                                blackKey = utility.getXY(redKeys.get(finalI - 1)[1]);
-                                board.getButtonBoard()[blackKey[1]][blackKey[0]].setIcon(null);
-                            }
-                        });
-                        timer.setRepeats(false);
-                        timer.start();
-                        delay += 500;
-
-                    }
-                }
-                Timer timer = new Timer(delay, ae -> {
-                    chessBoardSquares[newY][newX].setIcon(new ImageIcon(board.getBlackPiece()));
-                    if (blackKing) {
-                        chessBoardSquares[newY][newX].setIcon(new ImageIcon(board.getBlackKingPiece()));
-                    }
-                });
-                timer.setRepeats(false);
-                timer.start();
-
+                buttonBoard[formerY][formerX].setIcon(null);
+                checkMultiStepMovement(redPieces, buttonBoard, newX, newY);
             } else {
                 redPieces.remove(movements[2]);
             }
         } else {
+            // simple move
             if (realMove) {
-                chessBoardSquares[newY][newX].setIcon(new ImageIcon(board.getBlackPiece()));
+                buttonBoard[formerY][formerX].setIcon(null);
+                buttonBoard[newY][newX].setIcon(new ImageIcon(board.getBlackPiece()));
 
-                if (blackPieces.get(newKey).isKing()) {
-                    chessBoardSquares[newY][newX].setIcon(new ImageIcon(board.getBlackKingPiece()));
+                if (blackPieces.get(newPositionKey).isKing()) {
+                    buttonBoard[newY][newX].setIcon(new ImageIcon(board.getBlackKingPiece()));
                 }
             }
         }
@@ -122,35 +102,94 @@ public class AI {
 
     }
 
+    /**
+     * Checks whether jumps and multiple jumps are possible. Sets multiple timers in oder to achieve a fluent move flow.
+     *
+     * @param redPieces   the red pieces
+     * @param buttonBoard the board which contains 64 buttons
+     * @param newX        the jump x-position
+     * @param newY        the jump y-positon
+     */
+    private void checkMultiStepMovement(Map<String, Piece> redPieces, JButton[][] buttonBoard, int newX, int newY) {
 
+        int delay = 0;
+        // a list of keys of pieces that can be removed
+        Map<String, List<String[]>> removeKeys = utility.getRemoveKeys();
+        for (String removeKey : removeKeys.keySet()) {
+            List<String[]> redKeys = removeKeys.get(removeKey);
+
+            for (int i = 0; i < redKeys.size(); i++) {
+
+                redPieces.remove(redKeys.get(i)[0]);
+
+                int finalI = i;
+                // set a timer to achieve a pause
+                Timer timer = new Timer(delay, ae -> {
+
+                    // remove the red piece
+                    int[] redXY = utility.getXY(redKeys.get(finalI)[0]);
+                    buttonBoard[redXY[1]][redXY[0]].setIcon(null);
+
+                    // set a temporary black piece
+                    int[] blackKey = utility.getXY(redKeys.get(finalI)[1]);
+                    buttonBoard[blackKey[1]][blackKey[0]].setIcon(new ImageIcon(board.getBlackPiece()));
+
+                    // remove the previous black piece
+                    if (finalI > 0) {
+                        blackKey = utility.getXY(redKeys.get(finalI - 1)[1]);
+                        board.getButtonBoard()[blackKey[1]][blackKey[0]].setIcon(null);
+                    }
+                });
+                timer.setRepeats(false);
+                timer.start();
+                delay += 1000;
+
+            }
+        }
+        // the timer for the last piece
+        Timer timer = new Timer(delay, ae -> {
+            buttonBoard[newY][newX].setIcon(new ImageIcon(board.getBlackPiece()));
+            if (blackKing) {
+                buttonBoard[newY][newX].setIcon(new ImageIcon(board.getBlackKingPiece()));
+            }
+        });
+        timer.setRepeats(false);
+        timer.start();
+    }
+
+    /**
+     * Gets the possible simple and jump moves and then calls the minimax function. The best move is given the makeMove method.
+     */
     public void moveAI() {
 
         Map<String, Piece> redPieces = board.getRedPieces();
         Map<String, Piece> blackPieces = board.getBlackPieces();
 
+        // get the possible moves
         utility.getPossibleMoves(redPieces, blackPieces, false);
         List<String[]> simpleMoves = utility.getSimpleMoves();
         List<String[]> jumpMoves = utility.getJumpMoves();
 
         if (simpleMoves.isEmpty() && jumpMoves.isEmpty()) {
-            System.out.println("win");
+            board.getTextField().setText("Win!");
         } else {
             recursionCounter = 1;
             miniMax.miniMax(utility.deepCopyMap(redPieces), utility.deepCopyMap(blackPieces), depth, Integer.MIN_VALUE, Integer.MAX_VALUE, false);
 
 
             String[] bestMove = miniMax.getBestMove();
-            formerKey = bestMove[1];
+            formerPositionKey = bestMove[1];
 
+            // if jump is possible check for multiple jumps
             if (bestMove.length == 3) {
                 jumpMoves = new ArrayList<>();
                 jumpMoves.add(bestMove);
                 utility.setJumpMoves(jumpMoves);
-                List<String[]> copiedAttackMoves = utility.deepCopyList(jumpMoves);
-                utility.setCopyJumpMoves(copiedAttackMoves);
+                List<String[]> copiedJumpMoves = utility.deepCopyList(jumpMoves);
+                utility.setCopyJumpMoves(copiedJumpMoves);
                 utility.clearRemoveKeys();
                 utility.checkMultipleJump(utility.deepCopyMap(redPieces), utility.deepCopyMap(blackPieces), false);
-                bestMove = copiedAttackMoves.get(0);
+                bestMove = copiedJumpMoves.get(0);
 
 
             }
