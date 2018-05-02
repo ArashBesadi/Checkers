@@ -165,7 +165,7 @@ public class AI {
      */
     public void moveAI() {
 
-        Timer timer = new Timer(500, ae -> {
+        Timer timer = new Timer(300, ae -> {
             Map<String, Piece> redPieces = board.getRedPieces();
             Map<String, Piece> blackPieces = board.getBlackPieces();
 
