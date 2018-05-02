@@ -140,7 +140,7 @@ public class Board {
         JRadioButtonMenuItem easy = new JRadioButtonMenuItem("Easy: Depth = 1");
         JRadioButtonMenuItem medium = new JRadioButtonMenuItem("Medium: Depth = 2");
         JRadioButtonMenuItem hard = new JRadioButtonMenuItem("Hard: Depth = 4");
-        JRadioButtonMenuItem veryHard = new JRadioButtonMenuItem("Very Hard: Depth = 6");
+        JRadioButtonMenuItem veryHard = new JRadioButtonMenuItem("Very Hard: Depth = 10");
 
         difficultyMenu.add(easy);
         difficultyMenu.add(medium);

@@ -18,8 +18,8 @@ public class Utility {
     private List<String[]> jumpMoves;
     private List<String[]> copyJumpMoves;
 
-    private Map<Integer, List<String[]>> tempRemoveKeys = new HashMap<>();
-    private Map<String, List<String[]>> removeKeys = new HashMap<>();
+    private Map<Integer, List<String[]>> tempJumpKey = new HashMap<>();
+    private Map<String, List<String[]>> jumpKey = new HashMap<>();
 
     /**
      * Returns possible simple moves and jump moves given a current position (key).
@@ -144,7 +144,7 @@ public class Utility {
     }
 
     /**
-     * Checks whether multiple jumps are possible and save them into a HashMap removeKeys.
+     * Checks whether multiple jumps are possible and save them into a HashMap jumpKey.
      *
      * @param redPieces   the red pieces
      * @param blackPieces the black pieces
@@ -162,14 +162,14 @@ public class Utility {
                 String removeKey = copyJumpMoves.get(i)[2];
 
                 // save the keys for later multi-step visualisation
-                if (!tempRemoveKeys.containsKey(i)) {
-                    tempRemoveKeys.put(i, new ArrayList<>());
+                if (!tempJumpKey.containsKey(i)) {
+                    tempJumpKey.put(i, new ArrayList<>());
                 }
-                List<String[]> tempKeys = this.tempRemoveKeys.get(i);
+                List<String[]> tempKeys = this.tempJumpKey.get(i);
                 String[] keyCombination = {removeKey, newKey};
                 tempKeys.add(keyCombination);
 
-                this.tempRemoveKeys.put(i, tempKeys);
+                this.tempJumpKey.put(i, tempKeys);
 
                 // add the position to the board representation
                 Piece piece = new Piece();
@@ -198,13 +198,13 @@ public class Utility {
                     checkMultipleJump(redPieces, blackPieces, human);
                 }
             }
-            // save all the temporal keys for visualisation in removeKeys
+            // save all the temporal keys for visualisation in jumpKey
             for (int i = 0; i < copyJumpMoves.size(); i++) {
-                List<String[]> blackKeys = tempRemoveKeys.get(i);
+                List<String[]> blackKeys = tempJumpKey.get(i);
                 String key = copyJumpMoves.get(i)[0];
-                removeKeys.put(key, blackKeys);
+                jumpKey.put(key, blackKeys);
             }
-            tempRemoveKeys = new HashMap<>();
+            tempJumpKey = new HashMap<>();
         }
 
     }
@@ -303,12 +303,12 @@ public class Utility {
         return String.valueOf(x) + ":" + String.valueOf(y);
     }
 
-    public Map<String, List<String[]>> getRemoveKeys() {
-        return removeKeys;
+    public Map<String, List<String[]>> getJumpKey() {
+        return jumpKey;
     }
 
     public void clearRemoveKeys() {
-        removeKeys = new HashMap<>();
+        jumpKey = new HashMap<>();
     }
 
     public void setCopyJumpMoves(List<String[]> copyJumpMoves) {

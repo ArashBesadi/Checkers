@@ -15,7 +15,7 @@ public class AI {
     public static final int EASY = 1;
     public static final int MEDIUM = 2;
     public static final int HARD = 4;
-    public static final int VERY_HARD = 6;
+    public static final int VERY_HARD = 10;
 
     private Utility utility;
     private MiniMax miniMax;
@@ -98,7 +98,10 @@ public class AI {
                 }
             }
         }
-        board.setMovablePieces();
+
+        if (realMove) {
+            board.setMovablePieces();
+        }
 
     }
 
@@ -114,7 +117,7 @@ public class AI {
 
         int delay = 0;
         // a list of keys of pieces that can be removed
-        Map<String, List<String[]>> removeKeys = utility.getRemoveKeys();
+        Map<String, List<String[]>> removeKeys = utility.getJumpKey();
         for (String removeKey : removeKeys.keySet()) {
             List<String[]> redKeys = removeKeys.get(removeKey);
 
@@ -162,41 +165,41 @@ public class AI {
      */
     public void moveAI() {
 
-        Map<String, Piece> redPieces = board.getRedPieces();
-        Map<String, Piece> blackPieces = board.getBlackPieces();
+        Timer timer = new Timer(500, ae -> {
+            Map<String, Piece> redPieces = board.getRedPieces();
+            Map<String, Piece> blackPieces = board.getBlackPieces();
 
-        // get the possible moves
-        utility.getPossibleMoves(redPieces, blackPieces, false);
-        List<String[]> simpleMoves = utility.getSimpleMoves();
-        List<String[]> jumpMoves = utility.getJumpMoves();
+            // get the possible moves
+            utility.getPossibleMoves(redPieces, blackPieces, false);
+            List<String[]> simpleMoves = utility.getSimpleMoves();
+            List<String[]> jumpMoves = utility.getJumpMoves();
 
-        if (simpleMoves.isEmpty() && jumpMoves.isEmpty()) {
-            board.getTextField().setText("Win!");
-        } else {
-            recursionCounter = 1;
-            miniMax.miniMax(utility.deepCopyMap(redPieces), utility.deepCopyMap(blackPieces), depth, Integer.MIN_VALUE, Integer.MAX_VALUE, false);
+            if (simpleMoves.isEmpty() && jumpMoves.isEmpty()) {
+                board.getTextField().setText("Win!");
+            } else {
+                recursionCounter = 1;
+                miniMax.miniMax(utility.deepCopyMap(redPieces), utility.deepCopyMap(blackPieces), depth, Integer.MIN_VALUE, Integer.MAX_VALUE, false);
 
+                String[] bestMove = miniMax.getBestMove();
+                formerPositionKey = bestMove[1];
 
-            String[] bestMove = miniMax.getBestMove();
-            formerPositionKey = bestMove[1];
-
-            // if jump is possible check for multiple jumps
-            if (bestMove.length == 3) {
-                jumpMoves = new ArrayList<>();
-                jumpMoves.add(bestMove);
-                utility.setJumpMoves(jumpMoves);
-                List<String[]> copiedJumpMoves = utility.deepCopyList(jumpMoves);
-                utility.setCopyJumpMoves(copiedJumpMoves);
-                utility.clearRemoveKeys();
-                utility.checkMultipleJump(utility.deepCopyMap(redPieces), utility.deepCopyMap(blackPieces), false);
-                bestMove = copiedJumpMoves.get(0);
-
-
+                // if jump is possible check for multiple jumps
+                if (bestMove.length == 3) {
+                    jumpMoves = new ArrayList<>();
+                    jumpMoves.add(bestMove);
+                    utility.setJumpMoves(jumpMoves);
+                    List<String[]> copiedJumpMoves = utility.deepCopyList(jumpMoves);
+                    utility.setCopyJumpMoves(copiedJumpMoves);
+                    utility.clearRemoveKeys();
+                    utility.checkMultipleJump(utility.deepCopyMap(redPieces), utility.deepCopyMap(blackPieces), false);
+                    bestMove = copiedJumpMoves.get(0);
+                }
+                makeMove(bestMove, redPieces, blackPieces, true, false);
+                board.setMovablePieces();
             }
-            makeMove(bestMove, redPieces, blackPieces, true, false);
-            board.setMovablePieces();
-
-        }
+        });
+        timer.setRepeats(false);
+        timer.start();
     }
 
     public void setBoard(Board board) {

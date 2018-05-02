@@ -7,7 +7,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
 import java.util.Map;
-import java.util.TimerTask;
 
 /**
  * This class is responsible for the user interactions.
@@ -28,19 +27,8 @@ public class Human implements ActionListener {
     public Human(Utility utility, AI ai) {
         this.utility = utility;
         this.ai = ai;
-
-        java.util.Timer timer = new java.util.Timer();
-        timer.schedule(new MoveAI(), 0, 500);
     }
 
-    class MoveAI extends TimerTask {
-        public void run() {
-            if (!wait) {
-                ai.moveAI();
-                wait = true;
-            }
-        }
-    }
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -57,15 +45,17 @@ public class Human implements ActionListener {
         String currentPosition = e.getActionCommand();
         int[] xy = utility.getXY(currentPosition);
 
-        // check whether a green field has been selected previously
-        if (checkSimpleMoveFieldSelected(greenFields, currentPosition)) {
+        // checks whether a red field has been selected
+        boolean redFieldSelected = checkJumpFieldSelected(redFields, currentPosition);
+        if (redFieldSelected) {
             return;
+        } else {
+            // check whether a green field has been selected previously
+            if (checkSimpleMoveFieldSelected(greenFields, currentPosition)) {
+                return;
+            }
         }
 
-        // checks whether a red field has been selected previously
-        if (checkJumpFieldSelected(redFields, currentPosition)) {
-            return;
-        }
 
         // reset colored fields
         board.setSimpleMoveFields(new JButton[4]);
@@ -202,7 +192,7 @@ public class Human implements ActionListener {
 
             currentlySelectedPiece.setIcon(null);
 
-            List<String[]> blackKeys = utility.getRemoveKeys().get(currentPosition);
+            List<String[]> blackKeys = utility.getJumpKey().get(currentPosition);
             int delay = 0;
             if (blackKeys != null && !blackKeys.isEmpty()) {
                 for (int i = 0; i < blackKeys.size(); i++) {
@@ -240,13 +230,13 @@ public class Human implements ActionListener {
                 // set a timer for the last move
                 Timer timer = new Timer(delay - 500, ae -> {
                     setNewPosition(possibleFields, currentPosition);
-                    wait = false;
+                    ai.moveAI();
                 });
                 timer.setRepeats(false);
                 timer.start();
             } else {
                 setNewPosition(possibleFields, currentPosition);
-                wait = false;
+                ai.moveAI();
             }
             utility.clearRemoveKeys();
         }

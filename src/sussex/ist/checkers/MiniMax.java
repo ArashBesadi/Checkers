@@ -32,14 +32,14 @@ public class MiniMax {
      */
     public int miniMax(Map<String, Piece> redPieces, Map<String, Piece> blackPieces, int depth, int alpha, int beta, boolean human) {
 
-//        System.out.println(ai.recursionCounter++);
+        ai.recursionCounter++;
 
         // get possible moves
         utility.getPossibleMoves(redPieces, blackPieces, human);
         List<String[]> jumpMoves = utility.getJumpMoves();
         List<String[]> simpleMoves = utility.getSimpleMoves();
 
-        // stop if depth == 0 or node is a terminal node
+        // return the heuristic if depth == 0 or node is a terminal node
         if (depth == 0 || (simpleMoves.isEmpty() && jumpMoves.isEmpty())) {
             return heuristic(redPieces, blackPieces);
         }
@@ -66,7 +66,7 @@ public class MiniMax {
                 score = miniMax(copyRedPieces, copyBlackPieces, depth - 1, alpha, beta, true);
 
                 // save the best score
-                if (alpha < score) {
+                if (alpha <= score) {
                     alpha = score;
                     tempBestMove = move;
                 }
@@ -86,10 +86,17 @@ public class MiniMax {
                 Map<String, Piece> copyBlackPieces = utility.deepCopyMap(blackPieces);
 
                 ai.makeMove(move, copyRedPieces, copyBlackPieces, false, true);
+
+                utility.getPossibleMoves(copyRedPieces, copyBlackPieces, true);
+                jumpMoves = utility.getJumpMoves();
+                if (!jumpMoves.isEmpty()) {
+                    ai.makeMove(jumpMoves.get(0), copyRedPieces, copyBlackPieces, false, true);
+                }
+
                 score = miniMax(copyRedPieces, copyBlackPieces, depth - 1, alpha, beta, false);
 
                 // save the lowest score
-                if (score < beta) {
+                if (score <= beta) {
                     beta = score;
                     tempBestMove = move;
                 }
