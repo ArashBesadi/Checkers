@@ -4,3 +4,6 @@ This checkers game has been implemented for a programming project at the Univers
 ## Visualisation
 <br>
 Simple moves are highlighted green and jumps red. Pieces that are possible to move have a white boarder while selected pieces a yellow one. 
+
+<br>
+<img src="images/checkers.png"/>
